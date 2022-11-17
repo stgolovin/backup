@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 class Vk():
     
-    def __init__(self, access_token, user_id, version='5.131' ):
+    def __init__(self, access_token, user_id, version='5.131'):
         self.token = access_token
         self.id = user_id
         self.version = version
@@ -17,7 +17,7 @@ class Vk():
         url = 'https://api.vk.com/method/photos.get'
         params = {'users_id': self.id, 'album_id': 'profile', 'extended': 1}
         vk_response = requests.get(url, params={**self.params, **params})
-        self.get_photo_names(vk_response.json())
+        return vk_response.json()
 
     def get_photo_names(self, vk_response: dict):
         photo_dict = dict()
@@ -42,9 +42,9 @@ class Vk():
             with open('images_vk/%s' % f'{photo_name}.jpg', 'wb') as file:
                 img = requests.get(photo_url)
                 file.write(img.content)
-        with open('photos_report.json', 'w') as file:
-            json.dump(photos_report, file, indent=4)
         print(f'На локальный диск загружено: {len(photos_report)} фотографий.')
+        return photos_report
+
 
 class YaDisk:
 
@@ -93,19 +93,29 @@ class YaDisk:
         response = requests.put(href, data=open(path_to_file, 'rb'))
 
 
-# access_token = open('vk_token.txt').read()
-access_token = input('Введите токен ВК:   ')
-# user_id = '51476467'
-user_id = int(input('Введите ID пользователя ВК:   '))
-vk = Vk(access_token, user_id)
+class JsonReport:
 
-# ya_token = open('ya_token.txt').read()
-ya_token = input('Введите токен Яндекс.Диск:   ')
+    def dump_json_report(self, photos_report):
+        with open('photos_report.json', 'w') as file:
+            json.dump(photos_report, file, indent=4)
+
+
+access_token = open('vk_token.txt').read()
+# access_token = input('Введите токен ВК:   ')
+# user_id = '51476467'
+# user_id = 'stgolovin'
+# user_id = int(input('Введите ID пользователя ВК:   '))
+vk = Vk(access_token, user_id)
+ya_token = open('ya_token.txt').read()
+# ya_token = input('Введите токен Яндекс.Диск:   ')
 uploader = YaDisk(ya_token)
 folder_name = str(input('Введите имя папки на Яндекс диске, в которую необходимо сохранить фото:   =>'))
+reporter = JsonReport()
 
 if __name__ == '__main__':
-    vk.users_info()
+    vk_response = vk.users_info()
+    photos_report = vk.get_photo_names(vk_response)
+    reporter.dump_json_report(photos_report=photos_report)
     uploader.create_folder()
     photos_list = os.listdir('images_vk')
     count = 0
