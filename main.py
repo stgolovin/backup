@@ -102,7 +102,7 @@ class JsonReport:
 
 access_token = open('vk_token.txt').read()
 # access_token = input('Введите токен ВК:   ')
-# user_id = '51476467'
+user_id = '51476467'
 # user_id = 'stgolovin'
 # user_id = int(input('Введите ID пользователя ВК:   '))
 vk = Vk(access_token, user_id)
